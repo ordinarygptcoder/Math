@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tổ 3-12A11 - Ứng Dụng Thống Kê</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS CDN for parsing Excel / CSV files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        /* 3D Button styles matching Canva design */
+        .btn-3d {
+            transition: all 0.15s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            border: 2px solid #94a3b8;
+        }
+        .btn-3d:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px -1px rgba(0, 0, 0, 0.15), 0 3px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .btn-3d:active {
+            transform: translateY(1px);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        /* Outline stroke text simulation */
+        .text-stroke {
+            text-shadow: 
+                -1px -1px 0 #475569,  
+                 1px -1px 0 #475569,
+                -1px  1px 0 #475569,
+                 1px  1px 0 #475569;
+        }
+
+        /* Custom scrollbar for tables */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #64748b;
+            border-radius: 4px;
+        }
+
+        /* Background Graphics Canvas Effect */
+        .sketch-math {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .sphere-grid {
+            position: absolute;
+            bottom: -50px;
+            right: -50px;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.75;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative bg-slate-50 text-slate-800 select-none">
+
+    <!-- HEADER BAR -->
+    <header class="w-full p-3 sm:p-4 z-20">
+        <div class="max-w-6xl mx-auto flex items-center justify-between bg-gradient-to-r from-cyan-500 via-sky-500 to-blue-700 rounded-xl p-2 sm:p-3 shadow-md text-white">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white flex items-center justify-center p-0.5 shadow shrink-0">
+                     <img src="https://tracnghiem-anh.sgp1.digitaloceanspaces.com/79/79000758/AFiles/TinTuc/logof0134ad1-dcca-4625-989e-b90a9e018a26.jpg" alt="Logo THPT Tây Thạnh" style="width: 36px; height: 36px; object-fit: contain;">
+                </div>
+                <h1 class="text-xl sm:text-2xl font-bold tracking-wide text-white drop-shadow">Tổ 3-12A11</h1>
+            </div>
+            
+            <div class="flex items-center gap-4 sm:gap-8 font-semibold text-base sm:text-lg pr-2 sm:pr-4">
+                <button onclick="navTo('page1')" class="hover:underline flex items-center gap-1 transition text-white">
+                    homepage
+                </button>
+                <button onclick="openCreditModal()" class="hover:underline flex items-center gap-1 transition text-white">
+                    credit
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT AREA (PAGES CONTAINER) -->
+    <main class="flex-1 w-full max-w-5xl mx-auto px-4 py-4 flex flex-col items-center justify-center z-10 relative">
+
+        <!-- ==================== PAGE 1: CHẾ ĐỘ ==================== -->
+        <section id="page1" class="page-view w-full flex flex-col items-center justify-center my-auto">
+            <h2 class="text-3xl sm:text-4xl font-bold text-slate-700 mb-8 tracking-wide text-stroke text-white">Chế độ</h2>
+            
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-0 w-full max-w-2xl bg-slate-200 rounded-2xl p-1.5 shadow-md border-2 border-slate-300">
+                <button onclick="navTo('page2')" class="btn-3d w-full sm:w-1/2 bg-slate-100 hover:bg-slate-50 text-emerald-500 font-bold text-base sm:text-lg py-4 px-4 rounded-xl sm:rounded-r-none flex items-center justify-center gap-2 border-r-0 sm:border-r whitespace-nowrap">
+                    <i data-lucide="file-spreadsheet" class="w-6 h-6 text-emerald-600 shrink-0"></i>
+                    <span>Nhập mẫu số liệu</span>
+                </button>
+                <button onclick="navTo('page4')" class="btn-3d w-full sm:w-1/2 bg-slate-100 hover:bg-slate-50 text-indigo-500 font-bold text-base sm:text-lg py-4 px-4 rounded-xl sm:rounded-l-none flex items-center justify-center gap-2 whitespace-nowrap">
+                    <span>Tạo số liệu ngẫu nhiên</span>
+                    <i data-lucide="database" class="w-6 h-6 text-sky-500 shrink-0"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- ==================== PAGE 2: PHƯƠNG THỨC NHẬP ==================== -->
+        <section id="page2" class="page-view w-full hidden flex-col items-center justify-center my-auto">
+            <div class="w-full max-w-lg flex flex-col items-center gap-6">
+                <!-- Dropzone for Excel -->
+                <div id="dropzone" onclick="document.getElementById('excel-input').click()" 
+                     class="btn-3d w-full bg-slate-200 hover:bg-slate-100 cursor-pointer p-8 rounded-2xl border-2 border-slate-300 flex flex-col items-center justify-center gap-3 text-emerald-600 transition group">
+                    <i data-lucide="download" class="w-12 h-12 text-emerald-500 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-lg sm:text-xl font-bold text-emerald-600">nhập file excel (đuôi .xls, .xlsx, .csv)</span>
+                    <span class="text-xs text-slate-500 italic">Kéo và thả file vào đây hoặc nhấn để chọn file</span>
+                    <input type="file" id="excel-input" accept=".xls,.xlsx,.csv" class="hidden" onchange="handleFileSelect(event)">
+                </div>
+
+                <div class="text-slate-500 font-bold text-lg text-stroke text-white tracking-widest">HOẶC</div>
+
+                <!-- Manual Input Button -->
+                <button onclick="navTo('page3')" class="btn-3d w-full bg-slate-200 hover:bg-slate-100 text-cyan-600 font-bold text-xl py-4 px-6 rounded-2xl border-2 border-slate-300">
+                    nhập thủ công
+                </button>
+            </div>
+        </section>
+
+        <!-- ==================== PAGE 3: NHẬP THỦ CÔNG ==================== -->
+        <section id="page3" class="page-view w-full hidden flex-col items-center justify-between min-h-[450px]">
+            <div class="w-full max-w-xl bg-white border-4 border-slate-800 rounded-lg shadow-xl overflow-hidden my-auto">
+                <div class="max-h-[300px] overflow-y-auto custom-scrollbar">
+                    <table class="w-full text-center border-collapse">
+                        <thead>
+                            <tr class="border-b-4 border-slate-800 bg-slate-100 text-lg font-bold">
+                                <th class="p-3 border-r-4 border-slate-800 w-1/2">Giá Trị</th>
+                                <th class="p-3 w-1/2">Tần số</th>
+                            </tr>
+                        </thead>
+                        <tbody id="manual-table-body">
+                            <!-- Rows added dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Table Actions & Controls -->
+            <div class="flex items-center gap-3 mt-4">
+                <button onclick="addManualRow()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg flex items-center gap-1 shadow">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i> Thêm Dòng
+                </button>
+                <button onclick="clearManualTable()" class="bg-slate-500 hover:bg-slate-600 text-white font-semibold px-4 py-2 rounded-lg flex items-center gap-1 shadow">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i> Xóa Hết
+                </button>
+            </div>
+
+            <!-- Bottom Right Green Arrow Navigation -->
+            <div class="w-full flex justify-end mt-6">
+                <button onclick="submitManualData()" class="group flex items-center bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xl px-6 py-3 rounded-xl shadow-lg transition">
+                    <span>Tính ghép nhóm</span>
+                    <i data-lucide="arrow-right" class="w-8 h-8 ml-2 group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- ==================== PAGE 4: TẠO NGẪU NHIÊN ==================== -->
+        <section id="page4" class="page-view w-full hidden flex-col items-center justify-center my-auto">
+            <h2 class="text-2xl sm:text-3xl font-bold text-slate-700 mb-6 text-stroke text-white text-center">Chọn kiểu tạo bảng ngẫu nhiên</h2>
+            
+            <div class="w-full max-w-xl flex flex-col items-center gap-6">
+                <!-- Select Random Mode -->
+                <div class="flex w-full bg-slate-200 rounded-2xl p-1.5 shadow-md border-2 border-slate-300">
+                    <button id="rand-dice-btn" onclick="selectRandomType('dice')" class="btn-3d w-1/2 bg-slate-100 text-emerald-500 font-bold text-lg sm:text-xl py-3 px-4 rounded-xl rounded-r-none border-r">
+                        Tung xúc sắc
+                    </button>
+                    <button id="rand-coin-btn" onclick="selectRandomType('coin')" class="btn-3d w-1/2 bg-slate-200 text-indigo-500 font-bold text-lg sm:text-xl py-3 px-4 rounded-xl rounded-l-none opacity-70">
+                        Tung đồng xu
+                    </button>
+                </div>
+
+                <div class="w-full text-center">
+                    <label class="block text-2xl font-bold text-slate-700 mb-2 text-stroke text-white">Tung mấy lần?</label>
+                    <input type="number" id="rand-count" min="5" max="1000" value="30" 
+                           class="w-full bg-slate-200 border-2 border-slate-400 rounded-full py-3 px-6 text-center text-xl font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-inner">
+                </div>
+
+                <button onclick="generateRandomData()" class="btn-3d w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xl py-4 rounded-2xl border-2 border-emerald-600 shadow-md">
+                    Tạo Dữ Liệu & Thống Kê
+                </button>
+            </div>
+        </section>
+
+        <!-- ==================== PAGE 5: KẾT QUẢ & THỐNG KÊ ==================== -->
+        <section id="page5" class="page-view w-full hidden flex-col items-center justify-start py-2">
+            <!-- Mode Toggle Tabs -->
+            <div class="flex w-full max-w-md bg-slate-200 rounded-xl p-1 shadow-md border-2 border-slate-300 mb-6">
+                <button id="tab-grouped" onclick="switchGroupMode(true)" class="btn-3d w-1/2 bg-slate-100 text-emerald-600 font-bold text-lg py-2 rounded-lg rounded-r-none border-r">
+                    Ghép nhóm
+                </button>
+                <button id="tab-ungrouped" onclick="switchGroupMode(false)" class="btn-3d w-1/2 bg-slate-200 text-indigo-500 font-bold text-lg py-2 rounded-lg rounded-l-none opacity-70">
+                    Không ghép nhóm
+                </button>
+            </div>
+
+            <!-- Main Results Layout (Left Table & Slider, Right Stats Box) -->
+            <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                
+                <!-- LEFT BOX: Frequency Table & Slider -->
+                <div class="bg-slate-200 border-2 border-slate-300 rounded-2xl p-5 shadow-inner flex flex-col justify-between min-h-[320px]">
+                    <div id="left-box-title" class="text-center font-bold text-slate-700 text-lg mb-3">
+                        Bảng Tần Số
+                    </div>
+                    
+                    <!-- Table Container -->
+                    <div class="w-full bg-white rounded-xl border border-slate-300 overflow-hidden shadow-sm max-h-[220px] overflow-y-auto custom-scrollbar">
+                        <table class="w-full text-center border-collapse text-sm sm:text-base">
+                            <thead class="bg-slate-100 border-b border-slate-300 font-bold text-slate-700 sticky top-0">
+                                <tr>
+                                    <th id="th-col1" class="p-2 border-r border-slate-300">Khoảng Giá Trị</th>
+                                    <th class="p-2">Tần số (n)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="result-table-body" class="divide-y divide-slate-200">
+                                <!-- Data rendered here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Slider Control (Group Interval Count) -->
+                    <div id="slider-container" class="mt-4 pt-3 border-t border-slate-300">
+                        <div class="flex justify-between items-center text-xs sm:text-sm font-semibold text-slate-600 mb-1">
+                            <span>Số Nhóm / Khoảng: <strong id="k-value" class="text-emerald-600 text-base">5</strong></span>
+                            <span>Độ rộng nhóm (k): <strong id="h-value" class="text-blue-600">1.0</strong></span>
+                        </div>
+                        <input type="range" id="group-slider" min="3" max="12" value="5" oninput="onSliderChange(this.value)" class="w-full accent-emerald-500 cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- RIGHT BOX: Detailed Statistics -->
+                <div class="bg-slate-200 border-2 border-slate-300 rounded-2xl p-5 shadow-inner flex flex-col justify-between min-h-[320px]">
+                    <div class="text-center font-bold text-slate-700 text-lg mb-3">
+                        Chỉ Số Thống Kê
+                    </div>
+
+                    <div class="bg-white rounded-xl border border-slate-300 p-4 shadow-sm flex-1 flex flex-col justify-around gap-2 text-slate-700 text-sm sm:text-base">
+                        <div class="flex justify-between border-b pb-1">
+                            <span class="font-medium">Kích thước mẫu (N):</span>
+                            <span id="stat-n" class="font-bold text-blue-600">0</span>
+                        </div>
+                        <div class="flex justify-between border-b pb-1">
+                            <span class="font-medium">Số trung bình ($\overline{x}$):</span>
+                            <span id="stat-mean" class="font-bold text-emerald-600">0</span>
+                        </div>
+                        <div class="flex justify-between border-b pb-1">
+                            <span class="font-medium">Phương sai ($s^2$):</span>
+                            <span id="stat-var" class="font-bold text-slate-800">0</span>
+                        </div>
+                        <div class="flex justify-between border-b pb-1">
+                            <span class="font-medium">Độ lệch chuẩn ($s$):</span>
+                            <span id="stat-std" class="font-bold text-slate-800">0</span>
+                        </div>
+                        <div class="flex justify-between border-b pb-1">
+                            <span class="font-medium">Tứ phân vị (Q1, Q2, Q3):</span>
+                            <span id="stat-quartiles" class="font-bold text-indigo-600">0, 0, 0</span>
+                        </div>
+                        <div class="flex justify-between border-b pb-1">
+                            <span class="font-medium">Khoảng tứ phân vị (IQR):</span>
+                            <span id="stat-iqr" class="font-bold text-indigo-600">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="font-medium">Mốt (Mode):</span>
+                            <span id="stat-mode" class="font-bold text-rose-600">0</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Bottom Left Green Arrow Navigation Button -->
+            <div class="w-full flex justify-start mt-6">
+                <button onclick="editCurrentDataInPage3()" class="group flex items-center bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-lg px-5 py-3 rounded-xl shadow-lg transition">
+                    <i data-lucide="arrow-left" class="w-7 h-7 mr-2 group-hover:-translate-x-1 transition-transform"></i>
+                    <span>chỉnh mẫu số liệu</span>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- BACKGROUND GRAPHICS (SINE WAVE SKETCH & SPHERE GRID) -->
+    <svg class="sketch-math w-44 sm:w-64 h-auto" viewBox="0 0 200 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 10 100 L 190 100 M 180 95 L 190 100 L 180 105" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M 30 115 L 30 10 M 25 20 L 30 10 L 35 20" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M 30 100 Q 60 40 90 100 T 150 100" stroke="#22c55e" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <text x="192" y="105" fill="#22c55e" font-weight="bold" font-size="14">x</text>
+        <text x="40" y="20" fill="#22c55e" font-weight="bold" font-size="14">y</text>
+    </svg>
+
+    <svg class="sphere-grid w-64 sm:w-96 h-64 sm:h-96" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="90" stroke="#0284c7" stroke-width="1" stroke-dasharray="2 2"/>
+        <ellipse cx="100" cy="100" rx="90" ry="40" stroke="#0284c7" stroke-width="1.2"/>
+        <ellipse cx="100" cy="100" rx="90" ry="70" stroke="#0284c7" stroke-width="1.2"/>
+        <ellipse cx="100" cy="100" rx="40" ry="90" stroke="#0284c7" stroke-width="1.2"/>
+        <ellipse cx="100" cy="100" rx="70" ry="90" stroke="#0284c7" stroke-width="1.2"/>
+        <line x1="10" y1="100" x2="190" y2="100" stroke="#0284c7" stroke-width="1.5"/>
+        <line x1="100" y1="10" x2="100" y2="190" stroke="#0284c7" stroke-width="1.5"/>
+    </svg>
+
+    <!-- CUSTOM TOAST NOTIFICATION -->
+    <div id="toast" class="fixed top-5 right-5 z-50 transform translate-y-[-150%] transition-transform duration-300 bg-slate-900 text-white p-4 rounded-xl shadow-2xl flex items-start gap-3 max-w-md border border-slate-700">
+        <i data-lucide="info" class="w-6 h-6 text-cyan-400 shrink-0 mt-0.5"></i>
+        <div>
+            <h4 class="font-bold text-cyan-400 text-sm">Thông Báo Hệ Thống</h4>
+            <p id="toast-message" class="text-xs sm:text-sm text-slate-200 mt-1">Thông báo ở đây</p>
+        </div>
+    </div>
+
+    <!-- CREDIT MODAL -->
+    <div id="credit-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border-2 border-slate-200">
+            <button onclick="closeCreditModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h3 class="text-2xl font-bold text-slate-800 mb-4 border-b pb-2 flex items-center gap-2">
+                <i data-lucide="award" class="text-amber-500"></i> Thông Tin Sản Phẩm
+            </h3>
+            <div class="space-y-3 text-slate-600 text-sm sm:text-base">
+                <p><strong>Dự án:</strong> Ứng dụng Mô Phỏng & Thống Kê Số Liệu</p>
+                <p><strong>Thực hiện bởi:</strong> Tổ 3</p>
+                <p><strong>Môn học:</strong> Toán học 12 (Thống kê mẫu số liệu ghép nhóm)</p>
+                <p class="text-xs text-slate-400 pt-2 border-t">Design handled by Bùi Minh Thành <br> Code handled by Gemini.</p>
+            </div>
+            <button onclick="closeCreditModal()" class="mt-6 w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-2 rounded-xl transition">
+                Đóng
+            </button>
+        </div>
+    </div>
+
+    <!-- APPLICATION LOGIC JS -->
+    <script>
+        // --- GLOBAL STATE ---
+        let rawDataSet = []; // Array of numerical values extracted
+        let isGroupedMode = true;
+        let randomType = 'dice'; // 'dice' or 'coin'
+        let numGroups = 5;
+
+        // Initialize icons on load
+        window.onload = function() {
+            lucide.createIcons();
+            initDragAndDrop();
+            initManualTable();
+        };
+
+        // Navigation Controller
+        function navTo(pageId) {
+            document.querySelectorAll('.page-view').forEach(p => {
+                p.classList.add('hidden');
+                p.classList.remove('flex');
+            });
+            const target = document.getElementById(pageId);
+            if (target) {
+                target.classList.remove('hidden');
+                target.classList.add('flex');
+            }
+        }
+
+        // Custom Toast Notification
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            toastMsg.innerText = msg;
+            toast.classList.remove('translate-y-[-150%]');
+            setTimeout(() => {
+                toast.classList.add('translate-y-[-150%]');
+            }, 5000);
+        }
+
+        // --- PAGE 2: EXCEL FILE UPLOAD & DROPZONE ---
+        function initDragAndDrop() {
+            const dropzone = document.getElementById('dropzone');
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.add('border-emerald-500', 'bg-slate-100');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.remove('border-emerald-500', 'bg-slate-100');
+                }, false);
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files.length > 0) {
+                    processFile(files[0]);
+                }
+            }, false);
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        }
+
+        function processFile(file) {
+            // Requirement notice
+            showToast("Thông báo: Hệ thống chỉ trích xuất số liệu trong file và bỏ qua các nội dung khác!");
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                    // Extract numbers strictly
+                    let extractedNumbers = [];
+                    jsonData.forEach(row => {
+                        if (Array.isArray(row)) {
+                            row.forEach(cell => {
+                                const num = parseFloat(cell);
+                                if (!isNaN(num) && isFinite(cell)) {
+                                    extractedNumbers.push(num);
+                                }
+                            });
+                        }
+                    });
+
+                    if (extractedNumbers.length === 0) {
+                        alert("Không tìm thấy dữ liệu số hợp lệ trong file!");
+                        return;
+                    }
+
+                    rawDataSet = extractedNumbers;
+                    // Proceed to Page 5 directly
+                    renderStatistics();
+                    navTo('page5');
+
+                } catch (err) {
+                    console.error(err);
+                    alert("Lỗi khi đọc file! Vui lòng chọn file Excel hoặc CSV hợp lệ.");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // --- PAGE 3: MANUAL INPUT ---
+        function initManualTable() {
+            const tbody = document.getElementById('manual-table-body');
+            tbody.innerHTML = '';
+            // Default 4 rows matching UI screenshot
+            const sampleData = [
+                { val: 10, freq: 4 },
+                { val: 15, freq: 8 },
+                { val: 20, freq: 12 },
+                { val: 25, freq: 6 }
+            ];
+            sampleData.forEach(item => addManualRow(item.val, item.freq));
+        }
+
+        function addManualRow(val = '', freq = '') {
+            const tbody = document.getElementById('manual-table-body');
+            const tr = document.createElement('tr');
+            tr.className = "border-b border-slate-300";
+            tr.innerHTML = `
+                <td class="p-2 border-r-4 border-slate-800">
+                    <input type="number" step="any" value="${val}" placeholder="Nhập giá trị" class="w-full text-center font-semibold bg-transparent focus:outline-none focus:bg-slate-100 rounded">
+                </td>
+                <td class="p-2">
+                    <input type="number" step="1" min="1" value="${freq}" placeholder="Nhập tần số" class="w-full text-center font-semibold bg-transparent focus:outline-none focus:bg-slate-100 rounded">
+                </td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function clearManualTable() {
+            document.getElementById('manual-table-body').innerHTML = '';
+            addManualRow();
+        }
+
+        function submitManualData() {
+            const rows = document.querySelectorAll('#manual-table-body tr');
+            let data = [];
+            rows.forEach(r => {
+                const inputs = r.querySelectorAll('input');
+                const val = parseFloat(inputs[0].value);
+                const freq = parseInt(inputs[1].value);
+                if (!isNaN(val) && !isNaN(freq) && freq > 0) {
+                    for (let i = 0; i < freq; i++) {
+                        data.push(val);
+                    }
+                }
+            });
+
+            if (data.length === 0) {
+                alert("Vui lòng nhập ít nhất một giá trị và tần số hợp lệ!");
+                return;
+            }
+
+            rawDataSet = data;
+            renderStatistics();
+            navTo('page5');
+        }
+
+        // --- PAGE 4: RANDOM GENERATION ---
+        function selectRandomType(type) {
+            randomType = type;
+            const diceBtn = document.getElementById('rand-dice-btn');
+            const coinBtn = document.getElementById('rand-coin-btn');
+
+            if (type === 'dice') {
+                diceBtn.className = "btn-3d w-1/2 bg-slate-100 text-emerald-500 font-bold text-lg sm:text-xl py-3 px-4 rounded-xl rounded-r-none border-r opacity-100";
+                coinBtn.className = "btn-3d w-1/2 bg-slate-200 text-indigo-500 font-bold text-lg sm:text-xl py-3 px-4 rounded-xl rounded-l-none opacity-70";
+            } else {
+                coinBtn.className = "btn-3d w-1/2 bg-slate-100 text-indigo-500 font-bold text-lg sm:text-xl py-3 px-4 rounded-xl rounded-l-none border-l opacity-100";
+                diceBtn.className = "btn-3d w-1/2 bg-slate-200 text-emerald-500 font-bold text-lg sm:text-xl py-3 px-4 rounded-xl rounded-r-none opacity-70";
+            }
+        }
+
+        function generateRandomData() {
+            const countInput = document.getElementById('rand-count');
+            let count = parseInt(countInput.value) || 30;
+            count = Math.max(5, Math.min(1000, count));
+
+            let data = [];
+            for (let i = 0; i < count; i++) {
+                if (randomType === 'dice') {
+                    data.push(Math.floor(Math.random() * 6) + 1);
+                } else {
+                    data.push(Math.floor(Math.random() * 2));
+                }
+            }
+
+            rawDataSet = data;
+            renderStatistics();
+            navTo('page5');
+        }
+
+        // --- PAGE 5: STATISTICAL COMPUTATION & RENDER ENGINE ---
+        function switchGroupMode(grouped) {
+            isGroupedMode = grouped;
+            const btnG = document.getElementById('tab-grouped');
+            const btnUG = document.getElementById('tab-ungrouped');
+            const sliderBox = document.getElementById('slider-container');
+            const col1Header = document.getElementById('th-col1');
+
+            if (grouped) {
+                btnG.className = "btn-3d w-1/2 bg-slate-100 text-emerald-600 font-bold text-lg py-2 rounded-lg rounded-r-none border-r opacity-100";
+                btnUG.className = "btn-3d w-1/2 bg-slate-200 text-indigo-500 font-bold text-lg py-2 rounded-lg rounded-l-none opacity-70";
+                sliderBox.style.display = "block";
+                col1Header.innerText = "Khoảng Giá Trị [a; b)";
+            } else {
+                btnUG.className = "btn-3d w-1/2 bg-slate-100 text-indigo-600 font-bold text-lg py-2 rounded-lg rounded-l-none border-l opacity-100";
+                btnG.className = "btn-3d w-1/2 bg-slate-200 text-emerald-500 font-bold text-lg py-2 rounded-lg rounded-r-none opacity-70";
+                sliderBox.style.display = "none";
+                col1Header.innerText = "Giá Trị (x)";
+            }
+
+            renderStatistics();
+        }
+
+        function editCurrentDataInPage3() {
+            if (!rawDataSet || rawDataSet.length === 0) {
+                navTo('page3');
+                return;
+            }
+
+            const freqMap = {};
+            const sorted = [...rawDataSet].sort((a, b) => a - b);
+            sorted.forEach(x => {
+                freqMap[x] = (freqMap[x] || 0) + 1;
+            });
+
+            const tbody = document.getElementById('manual-table-body');
+            tbody.innerHTML = '';
+            Object.keys(freqMap).forEach(val => {
+                addManualRow(val, freqMap[val]);
+            });
+
+            showToast("Đã nạp số liệu dạng tần số vào trang chỉnh sửa!");
+            navTo('page3');
+        }
+
+        function onSliderChange(val) {
+            numGroups = parseInt(val);
+            document.getElementById('k-value').innerText = numGroups;
+            renderStatistics();
+        }
+
+        function renderStatistics() {
+            if (!rawDataSet || rawDataSet.length === 0) return;
+
+            const sorted = [...rawDataSet].sort((a, b) => a - b);
+            const n = sorted.length;
+            const min = sorted[0];
+            const max = sorted[n - 1];
+
+            document.getElementById('stat-n').innerText = n;
+
+            if (isGroupedMode) {
+                let range = max - min;
+                if (range === 0) range = 1;
+                
+                const k = numGroups;
+                const h = range / k;
+                document.getElementById('h-value').innerText = h.toFixed(2);
+
+                let groups = [];
+                for (let i = 0; i < k; i++) {
+                    let start = min + i * h;
+                    let end = min + (i + 1) * h;
+                    groups.push({
+                        start: start,
+                        end: end,
+                        mid: (start + end) / 2,
+                        count: 0
+                    });
+                }
+
+                sorted.forEach(val => {
+                    let placed = false;
+                    for (let i = 0; i < k; i++) {
+                        if (i === k - 1) {
+                            if (val >= groups[i].start && val <= groups[i].end + 0.00001) {
+                                groups[i].count++;
+                                placed = true;
+                                break;
+                            }
+                        } else {
+                            if (val >= groups[i].start && val < groups[i].end) {
+                                groups[i].count++;
+                                placed = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!placed) groups[k - 1].count++;
+                });
+
+                let sumMid = 0;
+                groups.forEach(g => sumMid += g.mid * g.count);
+                const groupedMean = sumMid / n;
+
+                let sumVar = 0;
+                groups.forEach(g => {
+                    sumVar += g.count * Math.pow(g.mid - groupedMean, 2);
+                });
+                const groupedVar = sumVar / n;
+                const groupedStd = Math.sqrt(groupedVar);
+
+                function getGroupedQuantile(p) {
+                    const targetN = n * p;
+                    let cf = 0;
+                    for (let i = 0; i < k; i++) {
+                        let prevCf = cf;
+                        cf += groups[i].count;
+                        if (cf >= targetN) {
+                            const L = groups[i].start;
+                            const fm = groups[i].count;
+                            if (fm === 0) return L;
+                            return L + ((targetN - prevCf) / fm) * h;
+                        }
+                    }
+                    return max;
+                }
+
+                const q1 = getGroupedQuantile(0.25);
+                const q2 = getGroupedQuantile(0.50);
+                const q3 = getGroupedQuantile(0.75);
+                const iqr = q3 - q1;
+
+                let maxFreqIndex = 0;
+                for (let i = 1; i < k; i++) {
+                    if (groups[i].count > groups[maxFreqIndex].count) maxFreqIndex = i;
+                }
+                const modalGroup = groups[maxFreqIndex];
+                const f_m = modalGroup.count;
+                const f_prev = maxFreqIndex > 0 ? groups[maxFreqIndex - 1].count : 0;
+                const f_next = maxFreqIndex < k - 1 ? groups[maxFreqIndex + 1].count : 0;
+
+                let mode = modalGroup.start;
+                if ((2 * f_m - f_prev - f_next) !== 0) {
+                    mode = modalGroup.start + ((f_m - f_prev) / (2 * f_m - f_prev - f_next)) * h;
+                }
+
+                const tbody = document.getElementById('result-table-body');
+                tbody.innerHTML = '';
+                groups.forEach(g => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="p-2 border-r border-slate-300 font-medium text-slate-700">[${g.start.toFixed(1)}; ${g.end.toFixed(1)})</td>
+                        <td class="p-2 font-bold text-emerald-600">${g.count}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                document.getElementById('stat-mean').innerText = groupedMean.toFixed(2);
+                document.getElementById('stat-var').innerText = groupedVar.toFixed(2);
+                document.getElementById('stat-std').innerText = groupedStd.toFixed(2);
+                document.getElementById('stat-quartiles').innerText = `${q1.toFixed(2)}, ${q2.toFixed(2)}, ${q3.toFixed(2)}`;
+                document.getElementById('stat-iqr').innerText = iqr.toFixed(2);
+                document.getElementById('stat-mode').innerText = mode.toFixed(2);
+
+            } else {
+                const freqMap = {};
+                let sum = 0;
+                sorted.forEach(x => {
+                    sum += x;
+                    freqMap[x] = (freqMap[x] || 0) + 1;
+                });
+
+                const mean = sum / n;
+
+                let sumSquareDiff = 0;
+                sorted.forEach(x => {
+                    sumSquareDiff += Math.pow(x - mean, 2);
+                });
+                const variance = sumSquareDiff / n;
+                const stdDev = Math.sqrt(variance);
+
+                function getQuartile(data, q) {
+                    const pos = (data.length - 1) * q;
+                    const base = Math.floor(pos);
+                    const rest = pos - base;
+                    if (data[base + 1] !== undefined) {
+                        return data[base] + rest * (data[base + 1] - data[base]);
+                    } else {
+                        return data[base];
+                    }
+                }
+
+                const uQ1 = getQuartile(sorted, 0.25);
+                const uQ2 = getQuartile(sorted, 0.50);
+                const uQ3 = getQuartile(sorted, 0.75);
+                const uIQR = uQ3 - uQ1;
+
+                let maxCount = 0;
+                let modes = [];
+                for (let key in freqMap) {
+                    if (freqMap[key] > maxCount) {
+                        maxCount = freqMap[key];
+                        modes = [key];
+                    } else if (freqMap[key] === maxCount) {
+                        modes.push(key);
+                    }
+                }
+
+                const tbody = document.getElementById('result-table-body');
+                tbody.innerHTML = '';
+                Object.keys(freqMap).forEach(key => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="p-2 border-r border-slate-300 font-medium text-slate-700">${key}</td>
+                        <td class="p-2 font-bold text-indigo-600">${freqMap[key]}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                document.getElementById('stat-mean').innerText = mean.toFixed(2);
+                document.getElementById('stat-var').innerText = variance.toFixed(2);
+                document.getElementById('stat-std').innerText = stdDev.toFixed(2);
+                document.getElementById('stat-quartiles').innerText = `${uQ1.toFixed(2)}, ${uQ2.toFixed(2)}, ${uQ3.toFixed(2)}`;
+                document.getElementById('stat-iqr').innerText = uIQR.toFixed(2);
+                document.getElementById('stat-mode').innerText = modes.join(', ');
+            }
+        }
+
+        function openCreditModal() {
+            document.getElementById('credit-modal').classList.remove('hidden');
+            document.getElementById('credit-modal').classList.add('flex');
+        }
+        function closeCreditModal() {
+            document.getElementById('credit-modal').classList.add('hidden');
+            document.getElementById('credit-modal').classList.remove('flex');
+        }
+    </script>
+</body>
+</html>
